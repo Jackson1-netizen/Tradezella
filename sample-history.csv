@@ -1,0 +1,4 @@
+Open Time,Close Time,Symbol,Direction,Volume,Open Price,Close Price,P&L,Spread,Commission,Swap,Currency
+2026-11-03 09:35:00,2026-11-03 10:05:00,MNQ,Long,1,21400,21440,80,Future,2.25,0,USD
+2026-11-03 10:20:00,2026-11-03 10:48:00,MES,Short,1,6860,6848,60,Future,2.00,0,USD
+2026-11-04 09:40:00,2026-11-04 09:55:00,MNQ,Long,1,21480,21450,-60,Future,2.25,0,USD
