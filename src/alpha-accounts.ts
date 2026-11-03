@@ -1,5 +1,6 @@
 import type { Account, JournalState } from "./types"
 import { APEX_ACCOUNT_ID, attachApexBook } from "./apex-book"
+import { alphaTrades } from "./alpha-trades"
 
 const SAMPLE_ACCOUNT_IDS = ["apex-50k", "ftmo-100k"]
 const SAMPLE_TX_IDS = ["x1", "x2", "x3", "x4", "x5"]
@@ -59,5 +60,11 @@ export function migrate(input: JournalState): JournalState {
     if (at >= 0) accounts[at] = { ...accounts[at], ...seed, id: accounts[at].id }
     else accounts.push(seed)
   }
-  return { ...state, accounts }
+  const ids = new Set(state.trades.map((t) => t.id))
+  const byBroker = new Map(accounts.map((a) => [a.broker, a.id]))
+  const seedId = new Map(ALPHA_ACCOUNTS.map((a) => [a.id, a.broker]))
+  const missing = alphaTrades()
+    .filter((t) => !ids.has(t.id))
+    .map((t) => ({ ...t, accountId: byBroker.get(seedId.get(t.accountId) ?? "") ?? t.accountId }))
+  return { ...state, accounts, trades: missing.length ? [...state.trades, ...missing] : state.trades, filters: missing.length ? { ...state.filters, accountId: "all" } : state.filters }
 }
