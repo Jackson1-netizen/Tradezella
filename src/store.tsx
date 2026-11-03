@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import type { Account, Filters, JournalState, PnlBasis, Trade, Transaction } from "./types"
-import { attachApexBook } from "./apex-book"
+import { migrate } from "./alpha-accounts"
 import { sampleState } from "./sample"
 
 const KEY = "jacks0n-journal-v1"
@@ -36,12 +36,12 @@ function withDisplay(state: JournalState): JournalState {
 function load(): JournalState {
   try {
     const raw = localStorage.getItem(KEY)
-    if (!raw) return withDisplay(attachApexBook(sampleState()))
+    if (!raw) return withDisplay(migrate(sampleState()))
     const parsed = JSON.parse(raw) as JournalState
-    if (!parsed.accounts || !parsed.trades || !parsed.filters) return withDisplay(attachApexBook(sampleState()))
-    return withDisplay(attachApexBook(parsed))
+    if (!parsed.accounts || !parsed.trades || !parsed.filters) return withDisplay(migrate(sampleState()))
+    return withDisplay(migrate(parsed))
   } catch {
-    return withDisplay(attachApexBook(sampleState()))
+    return withDisplay(migrate(sampleState()))
   }
 }
 
@@ -80,7 +80,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     })),
     addTrades: (trades) => setState((current) => ({ ...current, trades: [...current.trades, ...trades] })),
     addTransaction: (tx) => setState((current) => ({ ...current, transactions: [...current.transactions, tx] })),
-    loadSample: () => setState(withDisplay(attachApexBook(sampleState()))),
+    loadSample: () => setState(withDisplay(migrate(sampleState()))),
     clearJournal: () => setState((current) => ({
       ...sampleState(),
       accounts: [],

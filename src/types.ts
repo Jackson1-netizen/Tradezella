@@ -24,6 +24,11 @@ export type Account = {
   consistencyPct: number | null
   minTradingDays: number
   startDate: string
+  plan?: string
+  statusLabel?: string
+  singleDayLossCap?: number
+  minDailyProfit?: number
+  payoutDrawdownRule?: string
 }
 
 export type Trade = {

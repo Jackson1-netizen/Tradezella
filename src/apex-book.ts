@@ -76,8 +76,8 @@ export function apexTrades(accountId: string): Trade[] {
 export function apexAccount(id: string): Account {
   return {
     id,
-    nickname: "Average Futures 50K",
-    firm: "Apex Futures",
+    nickname: "Alpha Futures Standard 50K · …0541",
+    firm: "Alpha Futures",
     broker: "STDQA2026101600541",
     size: 50000,
     phase: "Evaluation",
@@ -89,7 +89,7 @@ export function apexAccount(id: string): Account {
     drawdownType: "Trailing",
     consistencyPct: null,
     minTradingDays: 0,
-    startDate: "2026-10-19",
+    startDate: "2026-10-17",
   }
 }
 

@@ -586,7 +586,7 @@ function PropFirm({ tab, setTab, mode, onTransaction }: { tab: "dashboard" | "ac
           <p className="sub">Fees are negative. Payouts are positive. Trade P&amp;L stays in the journal.</p>
         </div>
         <div className="inline-actions">
-          <button className="secondary" type="button" onClick={loadSample}>Load sample book</button>
+          <button className="secondary" type="button" onClick={loadSample}>Reset to Alpha accounts</button>
           <button className="secondary" type="button" onClick={clearJournal}>Clear journal</button>
           <button className="primary" type="button" onClick={onTransaction}>Add transaction</button>
         </div>
@@ -596,7 +596,7 @@ function PropFirm({ tab, setTab, mode, onTransaction }: { tab: "dashboard" | "ac
           <button key={item} type="button" role="tab" aria-selected={tab === item} onClick={() => setTab(item)}>{item[0].toUpperCase() + item.slice(1)}</button>
         ))}
       </div>
-      {!state.accounts.length && <Empty title="No prop accounts yet" body="Track an account with rules only, or load the sample Apex and FTMO book. Broker passwords are not part of this journal." />}
+      {!state.accounts.length && <Empty title="No prop accounts yet" body="Track an account with rules only, or reset to the Alpha Futures accounts. Broker passwords are not part of this journal." />}
       {tab === "dashboard" && state.accounts.length > 0 && (
         <div className="prop-cards">
           <article className="card">
@@ -620,15 +620,27 @@ function PropFirm({ tab, setTab, mode, onTransaction }: { tab: "dashboard" | "ac
                   <h2>{account.nickname}</h2>
                   <button className="danger" type="button" onClick={() => { setPendingDelete(account.id); deleteRef.current?.showModal() }}>Delete</button>
                 </div>
-                <p className="hint">{account.phase} · {account.status}</p>
+                <p className="hint">{account.plan ? `${account.firm} ${account.plan} · ` : ""}{account.phase}{account.statusLabel ? ` (${account.statusLabel})` : ""} · {account.status} · since {account.startDate}</p>
                 <p className="hint">{account.firm} · {account.broker} · {dollars(account.size, false)} · {account.drawdownType} drawdown</p>
                 <p style={{ marginTop: 8 }}>Closed P&amp;L <strong className={tone(progress.net)}><Money value={progress.net} mode={mode} balance={account.size} /></strong></p>
-                <p className="label" style={{ marginTop: 10 }}>Profit target {pct(Math.max(0, progress.targetPct))}</p>
-                <div className="track"><b style={{ width: `${Math.max(0, Math.min(100, progress.targetPct * 100))}%` }} /></div>
+                {account.profitTarget > 0 ? (<>
+                  <p className="label" style={{ marginTop: 10 }}>Profit target {pct(Math.max(0, progress.targetPct))}</p>
+                  <div className="track"><b style={{ width: `${Math.max(0, Math.min(100, progress.targetPct * 100))}%` }} /></div>
+                </>) : <p className="label" style={{ marginTop: 10 }}>Profit target: None</p>}
                 {account.maxDailyLoss > 0 && <p className="hint">Daily loss used {dollars(progress.dailyUsed, false)} of {dollars(account.maxDailyLoss, false)}</p>}
                 <p className="hint">Balance {dollars(progress.balance, false)}</p>
                 <p className="hint">Drawdown {dollars(progress.drawdownUsed, false)} of {dollars(account.maxDrawdown, false)}</p>
                 <p className="hint">{progress.tradedDays} trading days · min {account.minTradingDays}{account.consistencyPct != null ? ` · best day ${progress.consistency.toFixed(0)}% vs ${account.consistencyPct}% cap` : ""}</p>
+                <ul className="hint" aria-label="Account rules" style={{ marginTop: 8, paddingLeft: 18 }}>
+                  <li>Max drawdown {dollars(account.maxDrawdown, false)} ({account.drawdownType})</li>
+                  {account.maxDailyLoss > 0 && <li>Daily loss limit {dollars(account.maxDailyLoss, false)}</li>}
+                  {account.singleDayLossCap != null && <li>Single-day max loss cap {dollars(account.singleDayLossCap, false)}</li>}
+                  {account.consistencyPct != null && <li>Consistency rule {account.consistencyPct}%</li>}
+                  <li>Min trading days {account.minTradingDays}</li>
+                  {account.minDailyProfit != null && <li>Min daily profit {dollars(account.minDailyProfit, false)} USD per qualifying day</li>}
+                  <li>Profit target {account.profitTarget > 0 ? dollars(account.profitTarget, false) : "None"}</li>
+                  {account.payoutDrawdownRule && <li>{account.payoutDrawdownRule}</li>}
+                </ul>
               </article>
             )
           })}
@@ -749,6 +761,9 @@ function TrackDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogElement | n
       consistencyPct: data.get("consistency") ? Number(data.get("consistency")) : null,
       minTradingDays: Number(data.get("days") || 0),
       startDate: String(data.get("start")),
+      plan: String(data.get("plan") || "") || undefined,
+      minDailyProfit: data.get("minDailyProfit") ? Number(data.get("minDailyProfit")) : undefined,
+      payoutDrawdownRule: String(data.get("payoutRule") || "") || undefined,
     }
     const fee = Number(data.get("fee") || 0)
     addAccount(account, fee ? { amount: fee, category: "Evaluation Fee", description: `${account.nickname} evaluation` } : undefined)
@@ -781,6 +796,9 @@ function TrackDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogElement | n
           </label>
           <label className="field">Best-day cap %<input name="consistency" type="number" min="0" max="100" defaultValue="50" /></label>
           <label className="field">Min trading days<input name="days" type="number" min="0" defaultValue="5" /></label>
+          <label className="field">Plan<input name="plan" placeholder="Standard 50K" /></label>
+          <label className="field">Min daily profit $<input name="minDailyProfit" type="number" min="0" step="1" /></label>
+          <label className="field">Post-payout drawdown rule<input name="payoutRule" placeholder="Optional" /></label>
           <label className="field">Evaluation fee $<input name="fee" type="number" min="0" step="0.01" defaultValue="149" /></label>
         </div>
         <div className="dialog-actions">
