@@ -38,7 +38,7 @@ export const ALPHA_ACCOUNTS: Account[] = [
 ]
 
 export const ALPHA_PAYOUTS: Transaction[] = [
-  { id: "alpha-payout-0541-20261103", date: "2026-11-03", description: "Alpha Futures payout · …0541 — Requested $610.00 (account balance reduced by $610; $549.00 paid out)", accountId: APEX_ACCOUNT_ID, firm: "Alpha Futures", category: "Payout", amount: 549, status: "Reviewed" },
+  { id: "alpha-payout-0541-20261103", date: "2026-11-03", description: "Alpha Futures payout · …0541 — Requested $610.00 (account balance reduced by $610; $549.00 paid out)", accountId: APEX_ACCOUNT_ID, firm: "Alpha Futures", category: "Payout", amount: 549, withdrawn: 610, status: "Reviewed" },
 ]
 
 /** Idempotent: drops the old Apex/FTMO sample book, attaches the 0541 trades once, and upserts the three Alpha accounts by broker id. */
@@ -70,6 +70,8 @@ export function migrate(input: JournalState): JournalState {
   const missing = alphaTrades()
     .filter((t) => !ids.has(t.id))
     .map((t) => ({ ...t, accountId: byBroker.get(seedId.get(t.accountId) ?? "") ?? t.accountId }))
+  const seededTx = new Map(ALPHA_PAYOUTS.map((tx) => [tx.id, tx]))
+  state = { ...state, transactions: state.transactions.map((tx) => { const seed = seededTx.get(tx.id); return seed && tx.withdrawn !== seed.withdrawn ? { ...tx, withdrawn: seed.withdrawn } : tx }) }
   const txIds = new Set(state.transactions.map((tx) => tx.id))
   const payouts = ALPHA_PAYOUTS.filter((tx) => !txIds.has(tx.id)).map((tx) => ({ ...tx, accountId: byBroker.get(seedId.get(tx.accountId) ?? "") ?? tx.accountId }))
   return { ...state, accounts, transactions: payouts.length ? [...state.transactions, ...payouts] : state.transactions, trades: missing.length ? [...state.trades, ...missing] : state.trades, filters: missing.length ? { ...state.filters, accountId: "all" } : state.filters }

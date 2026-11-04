@@ -1,4 +1,4 @@
-import type { Account, Filters, JournalState, PnlBasis, Trade } from "./types"
+import type { Account, Filters, JournalState, PnlBasis, Trade, Transaction } from "./types"
 
 export function todayKey(date = new Date()): string {
   const y = date.getFullYear()
@@ -329,14 +329,20 @@ export function monthGrid(month: string): Array<{ date: string; inMonth: boolean
   return cells
 }
 
-export function accountBalance(account: Account, trades: Trade[], basis: PnlBasis): number {
+export function accountWithdrawn(account: Account, transactions: Transaction[] = []): number {
+  return transactions
+    .filter((tx) => tx.accountId === account.id && tx.category === "Payout" && tx.status !== "Ignored")
+    .reduce((sum, tx) => sum + (tx.withdrawn ?? 0), 0)
+}
+
+export function accountBalance(account: Account, trades: Trade[], basis: PnlBasis, transactions: Transaction[] = []): number {
   const net = trades
     .filter((trade) => trade.accountId === account.id && trade.status === "Closed")
     .reduce((sum, trade) => sum + tradeNet(trade, basis), 0)
-  return account.size + net
+  return account.size + net - accountWithdrawn(account, transactions)
 }
 
-export function ruleProgress(account: Account, trades: Trade[], basis: PnlBasis) {
+export function ruleProgress(account: Account, trades: Trade[], basis: PnlBasis, transactions: Transaction[] = []) {
   const mine = trades.filter((trade) => trade.accountId === account.id)
   const closed = mine.filter((trade) => trade.status === "Closed")
   const summary = summarize(closed, basis)
@@ -349,7 +355,7 @@ export function ruleProgress(account: Account, trades: Trade[], basis: PnlBasis)
   const consistency = winningDayProfit > 0 ? (best / winningDayProfit) * 100 : 0
   return {
     net: summary.net,
-    balance: account.size + summary.net,
+    balance: account.size + summary.net - accountWithdrawn(account, transactions),
     targetPct: account.profitTarget > 0 ? summary.net / account.profitTarget : 0,
     dailyUsed: Math.max(0, -todayNet),
     drawdownUsed: summary.maxDrawdown,

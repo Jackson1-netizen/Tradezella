@@ -604,8 +604,8 @@ function PropFirm({ tab, setTab, mode, onTransaction }: { tab: "dashboard" | "ac
             <strong className={tone(net)}><Money value={net} mode={mode} balance={spent || 1} /></strong>
             <p className="hint">{state.accounts.length} prop accounts · ROI {pct(roi)}</p>
           </article>
-          <Widget label="Funded" value={dollars(funded.reduce((sum, account) => sum + accountBalance(account, state.trades, basis), 0), false)} hint={`${funded.length} active`} />
-          <Widget label="Evaluation" value={dollars(evals.reduce((sum, account) => sum + accountBalance(account, state.trades, basis), 0), false)} hint={`${evals.length} active`} />
+          <Widget label="Funded" value={dollars(funded.reduce((sum, account) => sum + accountBalance(account, state.trades, basis, state.transactions), 0), false)} hint={`${funded.length} active`} />
+          <Widget label="Evaluation" value={dollars(evals.reduce((sum, account) => sum + accountBalance(account, state.trades, basis, state.transactions), 0), false)} hint={`${evals.length} active`} />
           <Widget label="Total spent" value={dollars(-spent)} hint="Evals, resets, activation" />
           <Widget label="Total earned" value={dollars(earned)} hint="Payouts and refunds" />
         </div>
@@ -613,7 +613,7 @@ function PropFirm({ tab, setTab, mode, onTransaction }: { tab: "dashboard" | "ac
       {tab === "accounts" && (
         <div className="account-grid">
           {state.accounts.map((account) => {
-            const progress = ruleProgress(account, state.trades, basis)
+            const progress = ruleProgress(account, state.trades, basis, state.transactions)
             return (
               <article key={account.id} className="card">
                 <div className="row-between">

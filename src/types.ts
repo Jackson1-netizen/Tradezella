@@ -62,6 +62,8 @@ export type Transaction = {
   firm: string
   category: TxCategory
   amount: number
+  /** Amount that left the trading account (e.g. payout requested before profit split). */
+  withdrawn?: number
   status: "Reviewed" | "Not Reviewed" | "Ignored"
 }
 
