@@ -6,6 +6,11 @@ const ACCOUNT_IDS: Record<string, string> = { "0575": "stdqa-50k-0575", "0257": 
 
 // Alpha Futures trade history, Melbourne local time. [acct, tradeId, symbol, side, qty, open, close, grossPnl, fees+commissions, openTime, closeTime]
 const ROWS: [string, string, string, "Long" | "Short", number, number, number, number, number, string, string][] = [
+  // 2026-11-04 Melbourne (dashboard 03-11-2026 Chicago), dates only: 12:00:00 is a placeholder time.
+  ["0257", "20261104-mcl-1", "MCL", "Short", 2.00, 95.60, 95.31, 58.00, 3.24, "2026-11-04T12:00:00", "2026-11-04T12:00:00"],
+  ["0257", "20261104-mcl-2", "MCL", "Short", 1.00, 95.76, 95.31, 45.00, 1.62, "2026-11-04T12:00:00", "2026-11-04T12:00:00"],
+  ["0257", "20261104-mcl-3", "MCL", "Short", 1.00, 95.76, 95.75, 1.00, 1.62, "2026-11-04T12:00:00", "2026-11-04T12:00:00"],
+  ["0575", "20261104-mes-1", "MES", "Short", 5.00, 7507.00, 7495.25, 293.75, 6.60, "2026-11-04T12:00:00", "2026-11-04T12:00:00"],
   ["0257", "fac809bb4c445444", "MES", "Long", 1.00, 7679.25, 7679.25, 0.00, 1.32, "2026-10-30T14:50:52", "2026-10-30T18:49:37"],
   ["0257", "4f93b5cba06e5404", "MES", "Long", 1.00, 7679.25, 7679.25, 0.00, 1.32, "2026-10-30T14:50:52", "2026-10-30T18:49:37"],
   ["0257", "69e3a7ff2fac5505", "MES", "Long", 1.00, 7679.25, 7684.75, 27.50, 1.32, "2026-10-30T14:50:52", "2026-10-30T15:22:39"],
